@@ -7,25 +7,34 @@ nltk.download('maxent_treebank_pos_tagger')
 nltk.download('maxent_ne_chunker')
 nltk.download('words')
 
-string = 'Prince William and his new new wife Catherine new kissed twice to satisfy the besotted Buckingham Palace Palace crowds'
-tokens = nltk.word_tokenize(string)
-# print(tokens)
+def createChunkingEn(string):
+    tokens = nltk.word_tokenize(string)
+    tags = nltk.pos_tag(tokens)
+    chunkingEn = nltk.ne_chunk(tags, binary = True)
 
-tags = nltk.pos_tag(tokens)
-# print(tags)
+    return chunkingEn
 
-chunkingEn = nltk.ne_chunk(tags, binary = True)
-# print(chunkingEn)
+def createWordList(tree):
+    for x in chunkingEn.subtrees():
+     if hasattr(x, 'label'):
+         if x.label() == "NE":
+             words = [w[0] for w in x.leaves()]
 
-for x in chunkingEn.subtrees():
- if hasattr(x, 'label'):
-     if x.label() == "NE":
-         words = [w[0] for w in x.leaves()]
-         name = " " . join(words)
-         # print(name)
+    return words
 
-counterWords = dict(collections.Counter(words))
+def createRanking(words):
+    counterWords = dict(collections.Counter(words))
+    sortedCounterWords = sorted(counterWords.items(), key = operator.itemgetter(1))
+    sortedCounterWords = list(reversed(sortedCounterWords))
 
-sortedCounterWords = sorted(counterWords.items(), key = operator.itemgetter(1))
-sortedCounterWords = list(reversed(sortedCounterWords))
-print(sortedCounterWords)
+    return sortedCounterWords
+
+def deleteMostFrecuencyWord(word, string):
+    return string.replace(word, "")
+
+string = 'Prince William and his new new wife Catherine new kissed twice to satisfy the besotted Buckingham Palace crowds'
+
+chunkingEn = createChunkingEn(string)
+wordsList = createWordList(chunkingEn.subtrees())
+rankingWords = createRanking(wordsList)
+print(rankingWords)
